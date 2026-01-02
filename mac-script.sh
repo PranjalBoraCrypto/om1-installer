@@ -1,57 +1,55 @@
 #!/bin/bash
 set -e
 
-echo "========================================"
-echo "   Pranjal OM1 Node Setup (macOS)        "
-echo "========================================"
+echo "Pranjal OM1 Node setup starting..."
 sleep 1
 
-# Check Homebrew
-if ! command -v brew >/dev/null 2>&1; then
-  echo "Homebrew not found. Installing now..."
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
-  eval "$(/opt/homebrew/bin/brew shellenv)"
+# Homebrew
+if ! command -v brew &> /dev/null; then
+    echo "Installing Homebrew..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+    eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
 
-echo ""
-echo "Installing required packages..."
-brew install python uv git ffmpeg portaudio -q
+echo "Installing dependencies..."
+brew install python uv portaudio ffmpeg git -q
 
-BASE_DIR="$HOME/pranjal-om1"
+cd ~
 
-if [ ! -d "$BASE_DIR" ]; then
-  echo "Downloading OM1 source code..."
-  git clone https://github.com/openmind/OM1.git "$BASE_DIR"
+# Clone OM1
+if [ ! -d "pranjal-om1" ]; then
+    git clone https://github.com/openmind/OM1.git pranjal-om1
 fi
 
-cd "$BASE_DIR"
+cd pranjal-om1
 git submodule update --init
 
-echo ""
-echo "Setting up Python environment..."
+# venv
+echo "Setting up virtual environment..."
 if [ ! -d ".venv" ]; then
-  uv venv
-else
-  echo "Existing environment found. Reusing it."
+    uv venv
 fi
-
 source .venv/bin/activate
 
 echo ""
-read -p "Enter your OpenMind API key: " OM_KEY
+read -p "Enter your OpenMind API key: " API_KEY
 
 if [ ! -f ".env" ]; then
-  cp env.example .env
+    cp env.example .env
 fi
 
-ESCAPED_KEY=$(printf '%s\n' "$OM_KEY" | sed 's/[\/&]/\\&/g')
-sed -i '' "s|^OM_API_KEY=.*|OM_API_KEY=$ESCAPED_KEY|" .env
+# safer replace even if key has / or &
+SAFE_KEY=$(printf '%s\n' "$API_KEY" | sed 's/[\/&]/\\&/g')
+sed -i '' "s|^OM_API_KEY=.*|OM_API_KEY=$SAFE_KEY|" .env
 
 echo ""
-echo "API key saved ✅"
+echo "API key added successfully ✅"
+echo "--------------------------------"
+grep OM_API_KEY .env
+echo "--------------------------------"
+
 echo ""
 echo "Starting OM1 node..."
 sleep 1
-
 uv run src/run.py conversation
