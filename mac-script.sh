@@ -33,7 +33,9 @@ fi
 source .venv/bin/activate
 
 echo ""
-read -p "Enter your OpenMind API key: " API_KEY
+echo "Enter your OpenMind API key (input hidden):"
+read -r -s API_KEY < /dev/tty
+echo ""
 
 # Ensure .env exists
 if [ ! -f ".env" ]; then
