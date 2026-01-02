@@ -30,7 +30,12 @@ git submodule update --init
 
 echo ""
 echo "Setting up Python environment..."
-uv venv
+if [ ! -d ".venv" ]; then
+  uv venv
+else
+  echo "Existing environment found. Reusing it."
+fi
+
 source .venv/bin/activate
 
 echo ""
@@ -46,11 +51,7 @@ sed -i '' "s|^OM_API_KEY=.*|OM_API_KEY=$ESCAPED_KEY|" .env
 echo ""
 echo "API key saved ✅"
 echo ""
-echo "Setup complete."
-echo ""
-echo "To start the OM1 node, run:"
-echo ""
-echo "  cd $BASE_DIR"
-echo "  source .venv/bin/activate"
-echo "  uv run src/run.py conversation"
-echo ""
+echo "Starting OM1 node..."
+sleep 1
+
+uv run src/run.py conversation
