@@ -25,17 +25,38 @@ fi
 cd pranjal-om1
 git submodule update --init
 
-# venv
 echo "Setting up virtual environment..."
 if [ ! -d ".venv" ]; then
   uv venv
 fi
 source .venv/bin/activate
 
-echo ""
-echo "Enter your OpenMind API key (input hidden):"
-read -r -s API_KEY < /dev/tty
-echo ""
+# -------- API KEY (force real terminal input + never allow empty) --------
+API_KEY=""
+
+# Ensure we have a real terminal to ask for input
+if [ ! -r /dev/tty ]; then
+  echo "Error: No terminal available for API key input."
+  echo "Run the script directly in a normal Terminal window."
+  exit 1
+fi
+
+while [ -z "$API_KEY" ]; do
+  echo "" > /dev/tty
+  echo "Enter your OpenMind API key (input hidden, paste and press Enter):" > /dev/tty
+
+  # hide input while typing/pasting
+  stty -echo < /dev/tty
+  IFS= read -r API_KEY < /dev/tty
+  stty echo < /dev/tty
+
+  echo "" > /dev/tty
+
+  if [ -z "$API_KEY" ]; then
+    echo "API key cannot be empty. Try again." > /dev/tty
+  fi
+done
+# ------------------------------------------------------------------------
 
 # Ensure .env exists
 if [ ! -f ".env" ]; then
