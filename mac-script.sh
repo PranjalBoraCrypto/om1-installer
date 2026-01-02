@@ -34,7 +34,7 @@ uv venv
 source .venv/bin/activate
 
 echo ""
-read -p "Paste your OpenMind API key and press Enter: " OM_KEY
+read -p "Enter your OpenMind API key: " OM_KEY
 
 if [ ! -f ".env" ]; then
   cp env.example .env
@@ -44,12 +44,13 @@ ESCAPED_KEY=$(printf '%s\n' "$OM_KEY" | sed 's/[\/&]/\\&/g')
 sed -i '' "s|^OM_API_KEY=.*|OM_API_KEY=$ESCAPED_KEY|" .env
 
 echo ""
-echo "API key configured successfully."
-echo "----------------------------------------"
-grep OM_API_KEY .env
-echo "----------------------------------------"
-
+echo "API key saved ✅"
 echo ""
-echo "Launching OM1 node..."
-sleep 2
-uv run src/run.py conversation
+echo "Setup complete."
+echo ""
+echo "To start the OM1 node, run:"
+echo ""
+echo "  cd $BASE_DIR"
+echo "  source .venv/bin/activate"
+echo "  uv run src/run.py conversation"
+echo ""
